@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>NeoMentor: Metaverse VR AI</title>
+    <meta charset="UTF-8" />
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
+  </head>
+  <body>
+    <a-scene>
+      <!-- Kamera + Cursor -->
+      <a-entity camera position="0 1.6 0" look-controls>
+        <a-cursor color="black" fuse="true" fuse-timeout="1000"></a-cursor>
+      </a-entity>
+
+      <!-- Lantai dan Langit -->
+      <a-plane position="0 0 -4" rotation="-90 0 0" width="10" height="10" color="#7BC8A4"></a-plane>
+      <a-sky color="#ECECEC"></a-sky>
+
+      <!-- NPC AI (klik & hover interaktif) -->
+      <a-box id="npc-mentor" position="0 1 -5" height="2" width="1" depth="1" color="#4B7BE5" class="clickable"
+             event-set__mouseenter="color: #00BCD4; scale: 1.1 1.1 1.1"
+             event-set__mouseleave="color: #4B7BE5; scale: 1 1 1">
+        <a-text value="AI Mentor" position="-0.5 1.2 0.6" color="#FFF"></a-text>
+      </a-box>
+
+      <!-- Boid: Simulasi gerakan sederhana -->
+      <a-sphere id="boid1" position="2 1 -4" radius="0.2" color="#FF5722"
+                event-set__mouseenter="scale: 1.5 1.5 1.5" event-set__mouseleave="scale: 1 1 1"></a-sphere>
+      <a-sphere id="boid2" position="3 1 -4" radius="0.2" color="#FF5722"
+                event-set__mouseenter="scale: 1.5 1.5 1.5" event-set__mouseleave="scale: 1 1 1"></a-sphere>
+
+      <!-- Semut (Ant Colony Simulation - agent based) -->
+      <a-box id="ant1" position="-2 0.1 -4" depth="0.2" height="0.1" width="0.2" color="#000000"
+             event-set__mouseenter="scale: 1.5 1 1.5" event-set__mouseleave="scale: 1 1 1"></a-box>
+      <a-box id="ant2" position="-2.5 0.1 -4.5" depth="0.2" height="0.1" width="0.2" color="#111111"
+             event-set__mouseenter="scale: 1.5 1 1.5" event-set__mouseleave="scale: 1 1 1"></a-box>
+
+      <!-- Tambahan objek dasar -->
+      <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9"
+             event-set__mouseenter="scale: 1.2 1.2 1.2" event-set__mouseleave="scale: 1 1 1"></a-box>
+      <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E"
+                event-set__mouseenter="scale: 1.2 1.2 1.2" event-set__mouseleave="scale: 1 1 1"></a-sphere>
+      <a-cylinder position="1 0.75 -3" radius="0.5" height="1.5" color="#FFC65D"
+                  event-set__mouseenter="scale: 1.2 1.2 1.2" event-set__mouseleave="scale: 1 1 1"></a-cylinder>
+      <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
+    </a-scene>
+
+    <script>
+      // FSM dan Rule-Based AI untuk NPC
+      const npc = document.querySelector('#npc-mentor');
+      let npcState = 'idle';
+      const states = ['idle', 'talking', 'teaching'];
+
+      npc.addEventListener('click', () => {
+        const question = prompt('Tanyakan sesuatu pada AI Mentor:');
+        if (!question) return;
+
+        if (question.toLowerCase().includes('belajar')) {
+          npcState = 'teaching';
+          alert('AI Mentor: Ayo kita mulai pelajaran!');
+        } else {
+          npcState = 'talking';
+          alert('AI Mentor: "' + question + '" adalah pertanyaan bagus!');
+        }
+
+        setTimeout(() => {
+          npcState = 'idle';
+        }, 5000); // kembali ke idle setelah 5 detik (time-based behavior)
+      });
+
+      // Boids behavior sederhana
+      const boids = [
+        document.querySelector('#boid1'),
+        document.querySelector('#boid2')
+      ];
+      setInterval(() => {
+        boids.forEach((boid, i) => {
+          let pos = boid.getAttribute('position');
+          pos.x += 0.03 * (i % 2 === 0 ? 1 : -1);
+          if (pos.x > 4) pos.x = -4;
+          if (pos.x < -4) pos.x = 4;
+          boid.setAttribute('position', pos);
+        });
+      }, 60);
+
+      // Ant Colony Behavior (Agent-Based)
+      const ants = [
+        document.querySelector('#ant1'),
+        document.querySelector('#ant2')
+      ];
+      setInterval(() => {
+        ants.forEach((ant) => {
+          const pos = ant.getAttribute('position');
+          const dx = (Math.random() - 0.5) * 0.1;
+          const dz = (Math.random() - 0.5) * 0.1;
+          ant.setAttribute('position', {
+            x: pos.x + dx,
+            y: pos.y,
+            z: pos.z + dz
+          });
+        });
+      }, 200);
+    </script>
+  </body>
+</html>
